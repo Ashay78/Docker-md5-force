@@ -19,7 +19,6 @@ class Sockets {
     }
 }
 
-
 const sockets = new Sockets();
 let cpt = 0;
 wss.on('connection', function connection(ws) {
@@ -31,12 +30,14 @@ wss.on('connection', function connection(ws) {
         console.log(msg)
 
         if (msg === 'slave') {
+            // TODO dont forgot remove
             sockets.saveSlave(cpt, ws);
             cpt++;
             return;
         }
 
         if (msg === 'server') {
+            // TODO dont forgot remove
             sockets.saveServer(cpt, ws);
             cpt++;
             return;
@@ -55,6 +56,10 @@ wss.on('connection', function connection(ws) {
                 case 'exit':
                     console.log('exit')
                     sockets.slaveList.forEach(slave => slave.send('exit'));
+                    break;
+                case 'nbSlave':
+                    console.log('nbSlave' + sockets.slaveList.length)
+                    sockets.serverList.forEach(slave => slave.send('' + sockets.slaveList.length));
                     break;
                 default:
                     break;

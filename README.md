@@ -7,3 +7,7 @@
 3. npm run start
 
 Add slave : ```docker run --rm  --platform linux/amd64 --init itytophile/hash-slave ws://address:port```
+
+## Docker
+
+1. ```docker-compose up --build```

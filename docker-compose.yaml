@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  frontend:
+    container_name: frontend
+    build: .
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 3000:3000
+      - 8000:8000
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run oui
+
+
+  slave:
+    image: "itytophile/hash-slave:latest"
+    command: ws://frontend:8000
+    deploy:
+      replicas: 0
+    depends_on:
+      - frontend

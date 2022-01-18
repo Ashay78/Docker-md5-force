@@ -12,6 +12,7 @@ class App extends Component {
     this.stop = this.stop.bind(this);
     this.exit = this.exit.bind(this);
     this.found = this.found.bind(this);
+    this.nbSlave = this.nbSlave.bind(this);
   }
 
   componentWillMount() {
@@ -48,6 +49,11 @@ class App extends Component {
     wss.send('found 1 2')
   }
 
+  nbSlave() {
+    console.log('nbSlave')
+    wss.send('found 1 2')
+  }
+
   render() {
     return (
         <div>
@@ -56,6 +62,7 @@ class App extends Component {
           <button onClick={this.stop}>stop</button>
           <button onClick={this.exit}>exit</button>
           <button onClick={this.found}>found 1 2</button>
+          <button onClick={this.nbSlave}>nbSlave</button>
         </div>
     );
   }
