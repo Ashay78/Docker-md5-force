@@ -21,7 +21,7 @@ class App extends Component {
     };
 
     wss.onmessage = (event) => {
-      console.log(event.data)
+      console.log('get : ' + event.data)
       // const json = JSON.parse(event.data);
       // console.log()
       // console.log(event);
@@ -51,7 +51,7 @@ class App extends Component {
 
   nbSlave() {
     console.log('nbSlave')
-    wss.send('found 1 2')
+    wss.send('server nbSlave')
   }
 
   render() {

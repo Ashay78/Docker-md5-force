@@ -22,5 +22,3 @@ services:
     command: ws://frontend:8000
     deploy:
       replicas: 0
-    depends_on:
-      - frontend
