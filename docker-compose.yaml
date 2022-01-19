@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.3'
 
 services:
   frontend:
@@ -19,6 +19,6 @@ services:
 
   slave:
     image: "itytophile/hash-slave:latest"
-    command: ws://frontend:8000
+    command: ws://192.168.1.51:8000
     deploy:
       replicas: 0
