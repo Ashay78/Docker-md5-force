@@ -11,3 +11,4 @@ Add slave : ```docker run --rm  --platform linux/amd64 --init itytophile/hash-sl
 ## Docker
 
 1. ```docker-compose up --build```
+2. ```docker-compose up -d --no-recreate --scale slave={nb slave}```

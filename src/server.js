@@ -4,18 +4,20 @@ const wss = new WebSocketServer({ port: 8000 });
 
 class Sockets {
     constructor() {
-        this.serverList = [];
-        this.slaveList = [];
+        this.serverList = new Set();
+        this.slaveList = new Set();
         this.saveServer = this.saveServer.bind(this);
         this.saveSlave = this.saveSlave.bind(this);
     }
 
     saveServer(id, server) {
-        this.serverList[id] = server;
+        // this.serverList[id] = server;
+        this.serverList.add(server);
     }
 
     saveSlave(id, slave) {
-        this.slaveList[id] = slave;
+        // this.slaveList[id] = slave;
+        this.slaveList.add(slave);
     }
 }
 
@@ -59,7 +61,8 @@ wss.on('connection', function connection(ws) {
                     break;
                 case 'nbSlave':
                     console.log('nbSlave' + sockets.slaveList.length)
-                    sockets.serverList.forEach(slave => slave.send('' + sockets.slaveList.length));
+                    sockets.serverList.forEach(server => server.send('nbSlave : ' + sockets.slaveList.size));
+                    sockets.serverList.forEach(server => server.send('nbServer : ' + sockets.serverList.size));
                     break;
                 default:
                     break;
@@ -69,6 +72,16 @@ wss.on('connection', function connection(ws) {
 
         if (parts[0] === 'found') {
             sockets.serverList.forEach(server => server.send(msg));
+        }
+    });
+
+    ws.on('close', function () {
+        if (sockets.serverList.has(ws)) {
+            sockets.serverList.delete(ws);
+        }
+
+        if (sockets.slaveList.has(ws)) {
+            sockets.slaveList.delete(ws);
         }
     });
 });
