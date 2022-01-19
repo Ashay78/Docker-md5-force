@@ -1,5 +1,6 @@
 const {WebSocketServer} = require('ws');
 const wss = new WebSocketServer({ port: 8000 });
+const exec = require('child_process').exec;
 
 
 class Sockets {
@@ -23,6 +24,8 @@ class Sockets {
 
 const sockets = new Sockets();
 let cpt = 0;
+let cptSlave = 0;
+
 wss.on('connection', function connection(ws) {
     ws.on('message', function (message) {
         var buf = Buffer.from(message);
@@ -32,14 +35,12 @@ wss.on('connection', function connection(ws) {
         console.log(msg)
 
         if (msg === 'slave') {
-            // TODO dont forgot remove
             sockets.saveSlave(cpt, ws);
             cpt++;
             return;
         }
 
         if (msg === 'server') {
-            // TODO dont forgot remove
             sockets.saveServer(cpt, ws);
             cpt++;
             return;
@@ -64,6 +65,16 @@ wss.on('connection', function connection(ws) {
                     sockets.serverList.forEach(server => server.send('nbSlave : ' + sockets.slaveList.size));
                     sockets.serverList.forEach(server => server.send('nbServer : ' + sockets.serverList.size));
                     break;
+                case 'addSlave':
+                    cptSlave++;
+                    scaleSlave(cptSlave);
+                    break;
+                case 'removeSlave':
+                    if (cptSlave > 0) {
+                        cptSlave--;
+                    }
+                    scaleSlave(cptSlave);
+                    break;
                 default:
                     break;
             }
@@ -85,3 +96,14 @@ wss.on('connection', function connection(ws) {
         }
     });
 });
+
+function scaleSlave(nbSlave) {
+    exec('docker-compose up -d --no-recreate --scale slave=' + nbSlave,
+        function (error, stdout, stderr) {
+            console.log('stdout: ' + stdout);
+            console.log('stderr: ' + stderr);
+            if (error !== null) {
+                console.log('exec error: ' + error);
+            }
+        });
+}

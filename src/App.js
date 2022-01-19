@@ -13,6 +13,8 @@ class App extends Component {
     this.exit = this.exit.bind(this);
     this.found = this.found.bind(this);
     this.nbSlave = this.nbSlave.bind(this);
+    this.addSlave = this.addSlave.bind(this);
+    this.removeSlave = this.removeSlave.bind(this);
   }
 
   componentWillMount() {
@@ -54,6 +56,16 @@ class App extends Component {
     wss.send('server nbSlave')
   }
 
+  addSlave() {
+    console.log('addSlave')
+    wss.send('server addSlave')
+  }
+
+  removeSlave() {
+    console.log('removeSlave')
+    wss.send('server removeSlave')
+  }
+
   render() {
     return (
         <div>
@@ -63,6 +75,8 @@ class App extends Component {
           <button onClick={this.exit}>exit</button>
           <button onClick={this.found}>found 1 2</button>
           <button onClick={this.nbSlave}>nbSlave</button>
+          <button onClick={this.addSlave}>Add slave</button>
+          <button onClick={this.removeSlave}>remove slave</button>
         </div>
     );
   }

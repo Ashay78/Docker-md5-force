@@ -6,6 +6,11 @@ COPY package*.json ./
 
 RUN npm install
 
+RUN apt update
+RUN apt upgrade -y
+RUN apt install docker -y
+RUN apt install docker-compose -y
+
 COPY . .
 
 EXPOSE 3000
