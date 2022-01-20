@@ -16,9 +16,14 @@ services:
       - CHOKIDAR_USEPOLLING=true
     command: npm run oui
 
-
   slave:
     image: "itytophile/hash-slave:latest"
-    command: ws://192.168.1.51:8000
+    command: ws://frontend:8000
     deploy:
       replicas: 0
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
