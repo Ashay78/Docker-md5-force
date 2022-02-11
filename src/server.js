@@ -1,7 +1,13 @@
 const {WebSocketServer} = require('ws');
 const wss = new WebSocketServer({ port: 8000 });
 const exec = require('child_process').exec;
+const mongoose = require('mongoose');
+const {Hash} = require("./Models/Hash");
 
+mongoose.connect('mongodb://mongo:27017/md5', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
 
 class Sockets {
     constructor() {
@@ -37,12 +43,14 @@ wss.on('connection', function connection(ws) {
         if (msg === 'slave') {
             sockets.saveSlave(cpt, ws);
             cpt++;
+            sendNbSlaveAndUser();
             return;
         }
 
         if (msg === 'server') {
             sockets.saveServer(cpt, ws);
             cpt++;
+            sendNbSlaveAndUser();
             return;
         }
 
@@ -50,20 +58,26 @@ wss.on('connection', function connection(ws) {
         if (parts[0] === 'server') {
             switch (parts[1]) {
                 case 'search':
-                    console.log('search')
+                    Hash.findOne({hash: parts[2]}).then(hash => {
+                        if (hash === null) {
+                            sockets.slaveList.forEach(slave => slave.send('search ' + parts[2] + ' a 9999'))
+                            sockets.serverList.forEach(server => server.send('search ' + parts[2]))
+                        } else {
+                            sockets.serverList.forEach(server => server.send('db ' + hash.hash + ' ' + hash.value))
+                        }
+                    })
                     break;
                 case 'stop':
                     console.log('stop')
-                    sockets.slaveList.forEach(slave => slave.send('stop'));
+                    sockets.slaveList.forEach(slave => slave.send('stop'))
+                    sockets.serverList.forEach(server => server.send('stop'))
+
                     break;
                 case 'exit':
                     console.log('exit')
-                    sockets.slaveList.forEach(slave => slave.send('exit'));
-                    break;
-                case 'nbSlave':
-                    console.log('nbSlave' + sockets.slaveList.length)
-                    sockets.serverList.forEach(server => server.send('nbSlave : ' + sockets.slaveList.size));
-                    sockets.serverList.forEach(server => server.send('nbServer : ' + sockets.serverList.size));
+                    sockets.slaveList.forEach(slave => slave.send('exit'))
+                    sockets.serverList.forEach(server => server.send('exit'))
+                    cptSlave = 0
                     break;
                 case 'addSlave':
                     cptSlave++;
@@ -82,7 +96,16 @@ wss.on('connection', function connection(ws) {
         }
 
         if (parts[0] === 'found') {
+            console.log('found : ' + parts[1] + ' ' + parts[2]);
+            sockets.slaveList.forEach(slave => slave.send('stop'))
             sockets.serverList.forEach(server => server.send(msg));
+
+            let hash = new Hash({
+                hash: parts[1],
+                value: parts[2]
+            })
+
+            hash.save();
         }
     });
 
@@ -94,6 +117,7 @@ wss.on('connection', function connection(ws) {
         if (sockets.slaveList.has(ws)) {
             sockets.slaveList.delete(ws);
         }
+        sendNbSlaveAndUser();
     });
 });
 
@@ -106,4 +130,9 @@ function scaleSlave(nbSlave) {
                 console.log('exec error: ' + error);
             }
         });
+}
+
+function sendNbSlaveAndUser() {
+    sockets.serverList.forEach(server => server.send('nbSlave ' + sockets.slaveList.size));
+    sockets.serverList.forEach(server => server.send('nbServer ' + sockets.serverList.size));
 }
