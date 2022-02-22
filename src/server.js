@@ -58,18 +58,17 @@ wss.on('connection', function connection(ws) {
         if (parts[0] === 'server') {
             switch (parts[1]) {
                 case 'search':
-                    var min = getNumber("a");
-                    var max = getNumber("9999");
-                    var nbSlave = sockets.slaveList.size;
-                    var step = (max - min) / nbSlave;
-                    var last = min;
-                    console.log(nbSlave);
+                    let slaveCount = sockets.slaveList.size;
+                    let division = fromBase62('9999') / slaveCount;
+                    let i = 0;
                     Hash.findOne({hash: parts[2]}).then(hash => {
                         if (hash === null) {
                             sockets.slaveList.forEach(
                                 slave => {
-                                    slave.send('search ' + parts[2] + ' ' + last + ' ' + (last+step))
-                                    last = last+step;
+                                    let first = toBase62(parseInt(division*i))
+                                    let last = toBase62(parseInt(division*(i+1)))
+                                    slave.send('search ' + parts[2] + ' ' + first + ' ' + last)
+                                    i = i + 1
                                 })
                             sockets.serverList.forEach(
                                 server => server.send('search ' + parts[2]))
@@ -148,20 +147,29 @@ function sendNbSlaveAndUser() {
     sockets.serverList.forEach(server => server.send('nbServer ' + sockets.serverList.size));
 }
 
-function getNumber(word) {
-    var number = 0;
-    for (var i = word.Length - 1; i >= 0; i--)
-    {
-        var letter = word[i];
-        var index = _alphabet.IndexOf(letter);
-        if (index == -1)
-        {
-            return -1;
+function fromBase62(s) {
+    var digits = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    var result = 0;
+    for (var i=0 ; i<s.length ; i++) {
+        var p = digits.indexOf(s[i]);
+        if (p < 0) {
+            return NaN;
         }
+        result += p * Math.pow(digits.length, s.length - i - 1);
+    }
+    return result;
+}
 
-        var x = (index + 1) * Math.pow(62, word.Length - (i + 1));
-        number += x;
+function toBase62(n) {
+    if (n === 0) {
+        return '0';
+    }
+    var digits = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    var result = '';
+    while (n > 0) {
+        result = digits[n % digits.length] + result;
+        n = parseInt(n / digits.length, 10);
     }
 
-    return number - 1;
+    return result;
 }
