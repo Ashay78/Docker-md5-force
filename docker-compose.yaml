@@ -18,7 +18,7 @@ services:
 
   slave:
     image: "itytophile/hash-slave:latest"
-    command: ws://frontend:8000
+    command: /slave ws://frontend:8000
     deploy:
       replicas: 0
 
